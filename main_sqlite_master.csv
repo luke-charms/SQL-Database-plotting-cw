@@ -1,0 +1,45 @@
+table,dataset,dataset,2,"CREATE TABLE dataset
+(
+    dateRep                 text,
+    day                     integer,
+    month                   integer,
+    year                    integer,
+    cases                   integer,
+    deaths                  integer,
+    countriesAndTerritories text,
+    geoId                   text,
+    countryterritoryCode    text,
+    popData2020             integer,
+    continentExp            text
+)"
+table,Date,Date,333,"CREATE TABLE Date
+(
+    dateRep text
+        constraint Date_pk
+            primary key,
+    day     integer,
+    month   integer,
+    year    integer
+)"
+index,sqlite_autoindex_Date_1,Date,334,
+table,CoronavirusData,CoronavirusData,337,"CREATE TABLE ""CoronavirusData""
+(
+    dateRep                 text,
+    cases                   integer,
+    deaths                  integer,
+    countriesAndTerritories text,
+    constraint CoronavirusData_pk
+        primary key (dateRep, countriesAndTerritories)
+)"
+index,sqlite_autoindex_CoronavirusData_1,CoronavirusData,338,
+table,CountryInfo,CountryInfo,335,"CREATE TABLE CountryInfo
+(
+    countriesAndTerritories text
+        constraint CountryInfo_pk
+            primary key,
+    geoId                   text,
+    countryterritoryCode    text,
+    popData2020             integer,
+    continentExp            text
+)"
+index,sqlite_autoindex_CountryInfo_1,CountryInfo,336,
