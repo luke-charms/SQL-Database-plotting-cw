@@ -1,0 +1,1 @@
+SELECT SUM(cases), SUM(deaths) from CoronavirusData;
