@@ -1,0 +1,371 @@
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{adjustbox}
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{geometry}
+
+\title{COMP1204: Data Management \\ Coursework Two: Databases}
+\author{Lukas Hjortenfeldt\\
+lah1u21\\
+32890818}
+\date{May 2022}
+\geometry{margin=1in}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\clearpage
+\pagenumbering{arabic}
+\newpage
+
+\section{The Relational Model}
+\subsection{EX1}
+The data-set of COVID-19 Coronavirus data from the EU Open Data Portal can be written in Relation form as follows: \\
+\textbf{CoronavirusData(dateRep,day,month,year,cases,deaths,countriesAndTerritories,\\geoId,countryterritoryCode,popData2020,continentExp)}
+
+\begin{center}
+    \begin{adjustbox}{width=500pt,center}
+    \begin{tabular}{ |c|c|c|c|c|c|c|c|c|c|c| } 
+    \hline
+    dateRep & day & month & year & cases & deaths & countriesAndTerritories & geoId & countryterritoryCode & popData2020 & continentExp\\ 
+    TEXT & INTEGER & INTEGER & INTEGER & INTEGER & INTEGER & TEXT & TEXT & TEXT & INTEGER & TEXT\\
+    \hline
+    \end{tabular}
+    \end{adjustbox}
+\end{center}
+
+\subsection{EX2}
+The minimal set of Functional Dependencies for this data-set is:
+\begin{itemize}
+  \item dateRep $\rightarrow$ day
+  \item dateRep $\rightarrow$ month
+  \item dateRep $\rightarrow$ year
+  \item day, month, year $\rightarrow$ dateRep
+  \item countriesAndTerritories $\rightarrow$ geoId
+  \item geoId $\rightarrow$ countryterritoryCode
+  \item geoId $\rightarrow$ popData
+  \item geoId $\rightarrow$ continentExp
+  \item countryterritoryCode $\rightarrow$ countriesAndTerritories
+  \item dateRep, geoId $\rightarrow$ cases
+  \item dateRep, geoId $\rightarrow$ deaths
+\end{itemize}
+The assumptions that I have made, considering the domain of the data and future data are that I assume popData has no functional dependencies to any other data because there is the potential for future data to be added which may include two countries with the same population and therefore break any functional dependencies popData may have to other data.
+I also assume that not every column of the data-set can functionally determine continentExp, only the columns (countriesAndTerritories, geoId and countryterritoryCode) as future countries may be added that are not in Europe and therefore would break the functional dependency from every column in the data-set.
+
+
+%Tip: You will need to think and determine whether values are 'blank' (a known value of blank) or null (an as yet unknown value) as this may have an impact on your dependencies. Explain any assumptions and decisions you make in the report.
+
+\subsection{EX3}
+The candidate keys contained in this data-set are:
+\begin{itemize}
+    \item \underline{dateRep}, \underline{countriesAndTerritories}
+    \item \underline{dateRep}, \underline{geoId}
+    \item \underline{dateRep}, \underline{countryterritoryCode}
+    \item \underline{day}, \underline{month}, \underline{year}, \underline{countriesAndTerritories}
+    \item \underline{day}, \underline{month}, \underline{year}, \underline{geoId}
+    \item \underline{day}, \underline{month}, \underline{year}, \underline{countryterritoryCode}
+\end{itemize}
+
+\subsection{EX4}
+A suitable primary key for this data-set is:
+\begin{itemize}
+    \item \underline{dateRep}, \underline{countriesAndTerritories}  %check this !!!
+\end{itemize}
+The reason for selecting this primary key is that it ensures any future data that may be added to the data-set will not interfere or change the uniqueness of the key. It also uses the least number of columns of data, which makes searching for other data more effective.
+
+\section{Normalisation}
+\subsection{EX5}
+Some partial-key dependencies that currently exist in the relation are:
+\begin{itemize}
+    \item dateRep $\rightarrow$ day, month, year
+    \item countriesAndTerritories $\rightarrow$ geoId, countryterritoryCode, popData2020, continentExp
+\end{itemize}
+Therefore, the additional relations we need to create, as part of the decomposition are:
+\begin{itemize}
+    \item \textbf{CoronavirusData(dateRep,cases,deaths,countriesAndTerritories)}
+    \item \textbf{Date(dateRep,day,month,year)}
+    \item \textbf{CountryInfo(countriesAndTerritories, geoId,countryterritoryCode,\\popData2020,continentExp)}
+\end{itemize}
+
+\subsection{EX6}
+The relation will now look like such, converted into 2NF:
+\begin{center}
+    Primary table: \textbf{CoronavirusData}
+    \begin{adjustbox}{width=300pt,center}
+    \begin{tabular}{ |c|c|c|c| } 
+    \hline
+    dateRep & cases & deaths & countriesAndTerritories\\
+    TEXT & INTEGER & INTEGER & TEXT\\
+    \hline
+    \end{tabular}
+    \end{adjustbox}
+    CoronavirusData(dateRep,cases,deaths,countriesAndTerritories)\\
+    \textbf{KEY: } \underline{dateRep} , \underline{countriesAndTerritories}
+\end{center}
+
+\begin{center}
+    Secondary table: \textbf{Date}
+    \begin{adjustbox}{width=250pt,center}
+    \begin{tabular}{ |c|c|c|c| } 
+    \hline
+    dateRep & day & month & year\\
+    TEXT & INTEGER & INTEGER & INTEGER\\
+    \hline
+    \end{tabular}
+    \end{adjustbox}
+    Date(dateRep,day,month,year)\\
+    \textbf{KEY: } \underline{dateRep}
+
+\end{center}
+
+\begin{center}
+    Tertiary table: \textbf{CountryInfo}
+    \begin{adjustbox}{width=400pt,center}
+    \begin{tabular}{ |c|c|c|c|c| } 
+    \hline
+    countriesAndTerritories & geoId & countryterritoryCode & popData2020 & continentExp\\
+    TEXT & TEXT & TEXT & INTEGER & TEXT\\
+    \hline
+    \end{tabular}
+    \end{adjustbox}
+    {\scriptsize CountryInfo(countriesAndTerritories,geoId,countryterritoryCode,popData2020,continentExp) \par}
+    \textbf{KEY: } \underline{countriesAndTerritories}
+\end{center}
+In order to convert this data-set into 2NF, I found the two partial-key dependencies that violated the 2NF, and added the values that broke this dependency to new relations instead. Now day, month and year, are no longer partially dependent on dateRep and are instead in a new relation, similarly geoId, countryterritoryCode, popData2020 and continentExp are also no longer partially dependent on countriesAndTerritories and are instead their own relation.
+
+\subsection{EX7}
+There are no transitive dependencies that currently exist in my new set of relations.
+Checking this is quite simple: \\
+1) In the first relation, no value can be found without using the key, therefore no transitive dependencies.\\
+2) In the second relation, it is similar, in that each value depends on the key: dateRep; and vice versa, so no transitive dependencies.\\
+3) In the third relation, there exist no non-key attributes that are transitively dependent on a candidate key.\\
+
+\subsection{EX8}
+My table is already in 3NF, due to the assumptions I made earlier, as well as the process I took to split my relation. A brief demonstration was shown above in \textbf{EX7} however, a more detailed look can be shown here: \\
+1) As mentioned above, in the first relation, we are already in 3NF because no single value can functionally determined another value, instead the primary key \underline{dateRep}, \underline{countriesAndTerritories} must be used to determine every value in the other columns.\\
+2) Similarly, this relation is also in 3NF because there are no transitive dependencies as each column functionally determines the others. \underline{dateRep} functionally determines both \underline{day}, \underline{month} and \underline{year}; but each of these columns does not determine any other.\\
+3) Finally, this relation is also in 3NF because there exist no non-key attributes that transitively dependent on a candidate key. This can be easily shown through the functional dependencies of the columns here:\\
+\underline{countriesAndTerritories} $\rightarrow$ \underline{geoId}\\
+\underline{geoId} $\rightarrow$ \underline{countryterritoryCode}, \underline{popData2020}, \underline{continentExp}\\
+\underline{countryterritoryCode} $\rightarrow$ \underline{countriesAndTerritories}\\
+As can be seen, there exist no dependencies that are transitive and not inverted, as both \underline{countriesAndTerritories}, \underline{geoId} and \underline{countryterritoryCode} can all functionally depend on each other.
+
+\subsection{EX9}
+My relations are in Boyce-Codd Normal Form because every determinant in the individual tables is a candidate key.\\
+1) For the first relation, there exists only one determinant and it is the primary key, therefore this relation is already in BCNF.\\
+2) In the second relation, we only have two determinants (\underline{dateRep} and \underline{day}, \underline{month}, \underline{year}) and they are both candidate keys, therefore this relation is also in BCNF.\\
+3) In the third relation, all our determinants are also always candidate keys:\\
+Both \underline{countriesAndTerritories}, \underline{geoId} and \underline{countryterritoryCode} are all candidate keys and the other columns, \underline{popData2020} and \underline{continentExp} do not functionally determine any other columns, so therefore this relation is also in BCNF.
+
+\newpage
+\section{Modelling}
+\subsection{EX10}
+These are the steps I took to complete \textbf{EX10}:
+\begin{listing}[H]
+    \begin{minted}[breaklines]{sqlite3}
+    //I created a table with the appropriate fields and data types
+    sqlite> create table dataset(
+   ...> dateRep TEXT,
+   ...> day INTEGER,
+   ...> month INTEGER,
+   ...> year INTEGER,
+   ...> cases INTEGER,
+   ...> deaths INTEGER,
+   ...> countriesAndTerritories TEXT,
+   ...> geoId TEXT,
+   ...> countryterritoryCode TEXT,
+   ...> popData2020 INTEGER,
+   ...> continentExp TEXT
+   ...> );
+   //I set the import mode to csv and imported the downloaded csv file to the table 'dataset'
+   sqlite> .mode csv
+   sqlite> .import /Users/lukash/Desktop/dataset.csv dataset
+   //I set the output of the .dump command and dumped the table into a file called dataset.sql
+   sqlite> .output /Users/lukash/Desktop/dataset.sql
+   sqlite> .dump dataset
+    \end{minted}
+    %\includegraphics[width=40mm,height=20mm,scale=0.1]
+\end{listing}
+
+As can be seen in the listing above, in order to complete \textbf{EX10}, I first created the sqlite table with the appropriate fields and data types for each field. Then I set the import mode to sqlite as .csv and imported the dataset.csv file that contained all the un-normalised data. Then, after setting the output path of the file, I dumped the database which returned the entire database, as requested.
+
+\newpage
+\subsection{EX11}
+These are the steps I took to complete \textbf{EX11}:
+\begin{listing}[H]
+    \begin{minted}[breaklines]{sqlite3}
+    //I created 3 new tables with the appropriate fields and data types, as well as primary keys, to represent the full normalised representation 
+    sqlite> create table CoronavirusData(
+   ...> dateRep TEXT,
+   ...> cases INTEGER,
+   ...> deaths INTEGER,
+   ...> countriesAndTerritories TEXT,
+   ...> PRIMARY KEY(dateRep,countriesAndTerritories)
+   ...> );
+   sqlite> create table  Date(
+   ...> dateRep TEXT,
+   ...> day INTEGER,
+   ...> month INTEGER,
+   ...> year INTEGER,
+   ...> PRIMARY KEY (dateRep)
+   ...> );
+    sqlite> create table CountryInfo(
+   ...> countriesAndTerritories TEXT,
+   ...> geoId TEXT,
+   ...> countryterritoryCode TEXT,
+   ...> popData2020 INTEGER,
+   ...> continentExp TEXT,
+   ...> PRIMARY KEY (countriesAndTerritories)
+   ...> );
+    \end{minted}
+\end{listing}
+
+As can be seen in the listing above, in order to complete \textbf{EX11}, I created the 3 new normalised tables without any data values in them, and gave each table an appropriate name, fields and data types for the fields. Afterwards, I repeated the same last steps of \textbf{EX10}, by setting the output path for the file and dumped the whole database, which now contained 4 tables and all the data still within the first table from \textbf{EX10}.
+
+\subsection{EX12}
+These are the steps I took to complete \textbf{EX12}:
+\begin{listing}[H]
+    \begin{minted}[breaklines]{sqlite3}
+    //I inserted the correct data from the already filled dataset table into the smaller, normalised tables:
+    sqlite> INSERT or IGNORE INTO CoronavirusData SELECT dateRep,cases,deaths,countriesAndTerritories FROM dataset;
+    sqlite> INSERT or IGNORE INTO Date SELECT DISTINCT dateRep,day,month,year FROM dataset;
+    sqlite> INSERT or IGNORE INTO CountryInfo SELECT DISTINCT countriesAndTerritories,geoId,countryterritoryCode,popData2020,continentExp FROM dataset;
+    \end{minted}
+\end{listing}
+
+Finally, As can be seen in the listing above, in order to complete \textbf{EX12}, I inserted the correct data from the primary filled first dataset table into the 3 normalised tables by using INSERT or IGNORE in order to allow sqlite to ignore any data values that may have been 'null'. The clause SELECT DISTINCT made sure to preserve space and only add distinct values to the other two tables as well because the same date or country does not need to be added multiple times.
+
+\subsection{EX13}
+Running the 3 commands: \\
+sqlite3 coronavirus.db $\leftarrow$ dataset.sql\\
+sqlite3 coronavirus.db $\leftarrow$ ex11.sql\\
+sqlite3 coronavirus.db $\leftarrow$ ex12.sql\\
+Results in a fully populated database, with the 3 normalised tables and data.\\
+The first command, creates an initial table and populates it with all the values contained in the .csv file.\\
+The second command then creates 3 additional tables and sets the appropriate fields and values, as well as setting the correct primary key for each, in order to create the full normalisation representation of the dataset.\\
+Finally, the last command then selects from the initial table with all the data values the appropriate columns of data and inserts them into the new normalised tables, eliminating any unnecessary duplicate values.
+
+\section{Querying}
+\subsection{EX14}
+The first task of finding the worldwide total number of cases and deaths was done using this approach:
+Using the aggregate function SUM(\underline{columnName}), I selected the appropriate \underline{cases} and \underline{deaths} columns from the main \textbf{CoronavirusData} table, and summed up there values.  \textbf{Code:} \\
+SELECT SUM(cases), SUM(deaths) from CoronavirusData;
+
+\subsection{EX15}
+The second task of finding the number of cases by date, in increasing date order, for the United Kingdom was done using this approach:
+Using the sql WHERE clause, which is used to identify conditions from the dataset, I selected the appropriate columns \underline{dateRep} and \underline{cases}  from the main \textbf{CoronavirusData} table to display, and selected each row that had the \underline{countriesAndTerritories} data value as: 'United$\_$Kingdom'.  \textbf{Code:} \\
+SELECT dateRep, cases FROM CoronavirusData WHERE countriesAndTerritories='United$\_$Kingdom';
+
+\subsection{EX16}
+The third task of finding the number of cases and deaths by date, in increasing date order, for each country was done using this approach:
+I selected the appropriate columns \underline{countriesAndTerritories}, \underline{dateRep}, \underline{cases} and \underline{deaths}. Using the sql INNER JOIN clause, which is used to join multiple tables from a database together, I joined the columns of \underline{day}, \underline{month} and \underline{year} from the joined tables of \textbf{CoronavirusData} and \textbf{Date}. I then ordered everything by the \underline{year}, \underline{month} and \underline{day} columns.  \textbf{Code:} \\
+SELECT CoronavirusData.countriesAndTerritories, CoronavirusData.dateRep, CoronavirusData.cases, CoronavirusData.deaths
+FROM CoronavirusData
+	LEFT JOIN Date ON CoronavirusData.dateRep=Date.dateRep
+ORDER BY year,month,day ASC;
+
+\subsection{EX17}
+The fourth task of finding the total number of cases and deaths as a percentage of the population, for each country was done using this approach:
+Using the sql INNER JOIN clause again, I selected the appropriate columns \underline{countriesAndTerritories}, \underline{cases} and \underline{deaths} from the joined tables of \textbf{CoronavirusData} and \textbf{CountryInfo}. However, in order to find the percentage values for each country, I cast the sum of the data values of \underline{cases} and \underline{deaths}(grouped by the column \underline{countriesAndTerritories}) to reals, as well as the data value of \underline{popData2020}, and then divided the summed totals of \underline{cases} and \underline{deaths} by \underline{popData2020}, respectively and multiplied each by 100, to find the percentage values of each. Using the round clause, I rounded all the values to 2 decimal places and renamed each column as '$\%$ cases of population' and $\%$ deaths of population'.  \textbf{Code:} \\
+SELECT CoronavirusData.countriesAndTerritories,
+       round(((CAST(SUM(CoronavirusData.cases) as real)) / (CAST(CountryInfo.popData2020 as real)) * 100), 2) as '$\%$ cases of population',\\
+       round(((CAST(SUM(CoronavirusData.deaths) as real)) / (CAST(CountryInfo.popData2020 as real)) * 100), 2) as '$\%$ deaths of population'
+FROM CoronavirusData \\
+LEFT JOIN CountryInfo ON CoronavirusData.countriesAndTerritories=CountryInfo.countriesAndTerritories
+GROUP BY CoronavirusData.countriesAndTerritories;
+
+\subsection{EX18}
+The fifth task of finding a descending list of the the top 10 countries, by percentage total deaths out of total cases in that country was done using this approach:
+Keeping a lot of the same code from the previous exercise, I cast the sum of the data values of \underline{cases} and \underline{deaths}(grouped by the column \underline{countriesAndTerritories}) and found the percentage of each per country. Using the round clause, I rounded the values to 2 decimal places and ordered the values of the percentage column by descending, limiting the number of visible queries to 10, thereby selecting the top 10 countries.  \textbf{Code:} \\
+SELECT CoronavirusData.countriesAndTerritories,
+       round(((CAST(SUM(CoronavirusData.deaths) as real)) / (CAST(SUM(CoronavirusData.cases) as real))) * 100, 2) as '$\%$ deaths of country cases'
+FROM CoronavirusData LEFT JOIN CountryInfo ON CoronavirusData.countriesAndTerritories=CountryInfo.countriesAndTerritories
+GROUP BY CoronavirusData.countriesAndTerritories ORDER BY 2 DESC
+LIMIT 10;
+
+\subsection{EX19}
+The sixth and final task of finding the date against a cumulative running total of the number of deaths by day and cases by day for the united kingdom was done using this approach:
+To begin with, I first selected the appropriate columns of \underline{dateRep}, \underline{cases} and \underline{deaths} where the \underline{countriesAndTerritories} id was equal to "United$\_$Kingdom". Then using the sql window function, I kept a running sum of the number of cases and deaths, and displayed this for each row of data, which therefore showed the cumulative total of cases and deaths for the UK. \textbf{Code:} \\
+SELECT
+    dateRep,
+    SUM(cases) OVER (
+        ROWS BETWEEN
+            UNBOUNDED PRECEDING AND
+            current row
+        ) AS 'Cumulative UK cases',
+    SUM(deaths) OVER (
+        ROWS BETWEEN
+            unbounded preceding AND
+            current row
+        ) AS 'Cumulative UK deaths'
+FROM CoronavirusData WHERE countriesAndTerritories='United$\_$Kingdom';
+
+\section{Extension}
+\subsection{EX20}
+My bash script that I created to plot a cumulative country death count against the date was done using this approach:
+Firstly, I created a temporary folder to contain all the extra files I needed to create the graph, that had write and execute privileges using the \textit{mktemp} command. I then echoed a sql queury similar to one used in \textbf{EX19}, that found a running total of the top 10 countries total death counts, into a temporary file in the folder called \textit{dataChooser.sql}. I had already pre-found the top 10 countries with most deaths therefore not requiring any selection or limiting to be added to my sql script. After this, I ran the sql script on the database, and inserted a comma in place of all the straight lines that sql inserts automaticlly between columns in order for the file to read more easily by the gnuplot software and piped all this into a .csv file called \textit{data.csv}. Finally I echoed my gnuplot script that I have written to take the data from the .csv file and plot it correctly into a .gnuplot file and executed this file on the data in the .csv file, saving my output from the .gnuplot script to a file called \textit{graph.png}. I then removed the temporary created testFolder as well in order to preserve space.
+
+
+\newpage
+\section{Appendix}
+\subsection{Bash Script}
+\begin{listing}[H]
+    \begin{minted}[breaklines]{bash}
+#!/bin/bash
+mktemp -d testFolder
+echo "SELECT
+    dateRep,
+    SUM(deaths) filter ( where countriesAndTerritories='United_Kingdom' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='Italy' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='France' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='Germany' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='Poland' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='Spain' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='Romania' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='Hungary' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='Czechia' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row),
+    SUM(deaths) filter ( where countriesAndTerritories='Bulgaria' ) OVER (
+        ROWS BETWEEN unbounded preceding AND current row)
+FROM CoronavirusData;" > testFolder/dataChooser.sql
+sqlite3 coronavirus.db < testFolder/dataChooser.sql | sed 's/|/,/g' > testFolder/data.csv
+echo "
+set datafile separator ','
+set xdata time
+set timefmt '%d/%m/%Y'
+set ylabel 'Cumulative Number of Deaths'
+set xlabel 'Time'
+set term png 
+set output 'graph.png'
+set terminal png size 1024,768
+plot 'testFolder/data.csv' using 1:2 title 'United Kingdom' with lines, \
+	'testFolder/data.csv' using 1:3 title 'Italy' with lines, \
+	'testFolder/data.csv' using 1:4 title 'France' with lines, \
+	'testFolder/data.csv' using 1:5  title 'Germany' with lines, \
+	'testFolder/data.csv' using 1:6  title 'Poland' with lines, \
+	'testFolder/data.csv' using 1:7 title 'Spain' with lines, \
+	'testFolder/data.csv' using 1:8  title 'Romania' with lines, \
+	'testFolder/data.csv' using 1:9  title 'Hungary' with lines, \
+	'testFolder/data.csv' using 1:10  title 'Czechia' with lines, \
+	'testFolder/data.csv' using 1:11  title 'Bulgaria' with lines
+replot" > testFolder/dataPlotter.gnuplot
+gnuplot testFolder/dataPlotter.gnuplot
+rm -r testFolder
+    \end{minted}
+\end{listing}
+
+
+\newpage
+\subsection{Graph produced by Bash Script}
+
+\end{document}
